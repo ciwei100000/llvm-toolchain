@@ -2,6 +2,7 @@ llvm-toolchain-3.3 (1:3.3-14) unstable; urgency=low
 
   * Port LLVM to mips64el. Thanks to YunQiang Su
     (Closes: #730808)
+  * Disable LLDB also for mips & mipsel
 
  -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 30 Nov 2013 12:32:29 +0100
 

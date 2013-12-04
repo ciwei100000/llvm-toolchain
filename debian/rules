@@ -71,9 +71,14 @@ ifneq (,$(filter scan-build,$(DEB_BUILD_OPTIONS)))
 endif
 
 LLDB_ENABLE=yes
-ifeq ($(DEB_HOST_ARCH),hurd-i386)
+LLDB_DISABLE_ARCHS := hurd-i386 mips mipsel
+# hurd has threading issues
+# mips* fails with "undefined references to `__atomic_load_8'"
+ifneq (,$(findstring $(DEB_HOST_ARCH),$(LLDB_DISABLE_ARCHS)))
+# Disable LLDB for this arch.
         LLDB_ENABLE=no
 endif
+
 
 %:
 	dh $@
