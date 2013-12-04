@@ -81,8 +81,8 @@ endif
 
 
 %:
-	dh $@
-# --buildsystem=cmake --builddirectory=$(TARGET_BUILD)
+	dh $@ --with ocaml
+
 
 debian/%: debian/%.in
 	sed -e 's|@DEB_HOST_MULTIARCH@|$(DEB_HOST_MULTIARCH)|g' -e "s|@OCAML_STDLIB_DIR@|$(OCAML_STDLIB_DIR)|g" -e "s|@LLVM_VERSION@|$(LLVM_VERSION)|g" $< > $@
