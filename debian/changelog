@@ -1,9 +1,32 @@
 llvm-toolchain-3.5 (1:3.5.2-2) UNRELEASED; urgency=medium
 
+  [ Sylvestre Ledru ]
   * Fix the CMake build. thanks to Paweł Bylica for the fix.
     Fix upstream bug #23352
+  * Remove old remove-ice-rust*.diff patches.
 
- -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 20 May 2015 09:48:55 +0200
+  [ Gianfranco Costamagna ]
+  * Really bump Standard-Version 
+  * d/rules: fix gcc-5 detection, since gcc-5.2
+    doesn't provide a g++-5.2 binary (but it is called
+    g++-5)
+    (copying the patch from llvm-3.7)
+
+  [ Sebastian Andrzej Siewior ]
+  * debian/patches/0001-fix-ftbs-with-gcc-5.patch:
+    - Fix gcc-5 related build failure (Closes: #781197)
+
+  [ Steven Chamberlain ]
+  * debian/patches/bug783205.patch
+    - make llvm find s390x standard libraries by looking in
+      the correct directory.
+
+  [ Matthias Klose ]
+  * Rename libllvm3.5 to libllvm3.5v5 for libstdc++6 transition.
+    (Closes: #794935)
+  * Add Conflict/Replaces to the old library package.
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Tue, 11 Aug 2015 11:47:14 +0200
 
 llvm-toolchain-3.5 (1:3.5.2-1) unstable; urgency=medium
 
