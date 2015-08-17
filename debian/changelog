@@ -28,6 +28,10 @@ llvm-toolchain-3.5 (1:3.5.2-2) unstable; urgency=medium
     (Closes: #794935)
   * Add Conflict/Replaces to the old library package.
 
+  [ Luciano Bello ]
+  * debian/patches/CVE-2015-2305.patch
+    (Closes: #778392)
+
  -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 17 Aug 2015 14:08:55 +0200
 
 llvm-toolchain-3.5 (1:3.5.2-1) unstable; urgency=medium
