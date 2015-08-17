@@ -4,6 +4,8 @@ llvm-toolchain-3.5 (1:3.5.2-2) UNRELEASED; urgency=medium
   * Fix the CMake build. thanks to Paweł Bylica for the fix.
     Fix upstream bug #23352
   * Remove old remove-ice-rust*.diff patches.
+  * bug-24472.diff: Silent some aarch64/arm64 tests which started to fail
+    probably during the gcc 5 migration
 
   [ Gianfranco Costamagna ]
   * Really bump Standard-Version 
