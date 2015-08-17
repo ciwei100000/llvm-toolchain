@@ -319,3 +319,13 @@ Index: llvm-toolchain-3.5-3.5.2/test/CodeGen/AArch64/sincospow-vector-expansion.
  
  
  define <2 x float> @test_cos_v2f64(<2 x double> %v1) {
+Index: llvm-toolchain-3.5-3.5.2/test/CodeGen/AArch64/i128-fast-isel-fallback.ll
+===================================================================
+--- llvm-toolchain-3.5-3.5.2.orig/test/CodeGen/AArch64/i128-fast-isel-fallback.ll
++++ llvm-toolchain-3.5-3.5.2/test/CodeGen/AArch64/i128-fast-isel-fallback.ll
+@@ -1,4 +1,5 @@
+ ; RUN: llc -O0 -mtriple=arm64-apple-ios7.0 -mcpu=generic < %s | FileCheck %s
++; XFAIL: *
+
+ ; Function Attrs: nounwind ssp
+ define void @test1() {

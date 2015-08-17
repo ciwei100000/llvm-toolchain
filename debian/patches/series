@@ -52,4 +52,4 @@ ignore-ifcvt3.ll.diff
 scan-build-clang-path.diff
 0001-fix-ftbs-with-gcc-5.patch
 bug783205.patch
-#bug-24472.diff
+bug-24472.diff
