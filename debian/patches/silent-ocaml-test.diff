@@ -1,0 +1,13 @@
+Index: llvm-toolchain-3.4-3.4.2/test/Bindings/Ocaml/bitwriter.ml
+===================================================================
+--- llvm-toolchain-3.4-3.4.2.orig/test/Bindings/Ocaml/bitwriter.ml
++++ llvm-toolchain-3.4-3.4.2/test/Bindings/Ocaml/bitwriter.ml
+@@ -4,7 +4,7 @@
+  * RUN: %ocamlopt -warn-error A unix.cmxa llvm.cmxa llvm_bitwriter.cmxa %t.builddir/bitwriter.ml -o %t
+  * RUN: %t %t.bc
+  * RUN: llvm-dis < %t.bc
+- * XFAIL: vg_leak
++ * XFAIL: *
+  *)
+ 
+ (* Note that this takes a moment to link, so it's best to keep the number of

@@ -46,4 +46,4 @@ lldb-libname.diff
 remove-dbtree.diff
 kfreebsd-path.diff
 isl-0.13-compat.diff
-CVE-2015-2305.patch
+silent-ocaml-test.diff
