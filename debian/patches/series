@@ -46,4 +46,4 @@ lldb-libname.diff
 remove-dbtree.diff
 kfreebsd-path.diff
 isl-0.13-compat.diff
-silent-ocaml-test.diff
+fix-ftbfs-ocaml-4.02
