@@ -39,3 +39,5 @@ bug783205.patch
 bug-24472.diff
 bug-790686-build-id.diff
 llvm-3.6.0-ocaml-ctypes-0.4.0.patch
+rL235088.diff
+no-version-script-for-executables.diff
