@@ -48,3 +48,4 @@ clang-apply-replacements.diff
 mips-fpxx-enable.diff
 no-version-script-for-executables.diff
 silent-test.diff
+fix-R_AARCH64_MOVW_UABS_G3-relocation.patch

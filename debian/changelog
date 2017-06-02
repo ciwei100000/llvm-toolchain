@@ -1,3 +1,13 @@
+llvm-toolchain-3.7 (1:3.7.1-6) UNRELEASED; urgency=medium
+
+  * Team upload
+  * debian/patches/fix-R_AARCH64_MOVW_UABS_G3-relocation.patch:
+    fix relocation issue, preventing Julia from working correctly on
+    arm64 (Closes: #862536)
+
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 02 Jun 2017 15:29:37 +0200
+
 llvm-toolchain-3.7 (1:3.7.1-5) unstable; urgency=medium
 
   * Only enable -gsplit-dwarf for armhf. Caused some illegal instructions
