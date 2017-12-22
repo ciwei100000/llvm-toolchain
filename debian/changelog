@@ -1,3 +1,9 @@
+llvm-toolchain-3.8 (1:3.8.1-26) unstable; urgency=medium
+
+  * Also link latomic on armel
+
+ --
+
 llvm-toolchain-3.8 (1:3.8.1-25) unstable; urgency=medium
 
   * Fix the detection of gcc (Closes: #853523)
@@ -18,7 +24,6 @@ llvm-toolchain-3.8 (1:3.8.1-25) unstable; urgency=medium
 
   [ Gianfranco Costamagna ]
   * use -g1 where Debug symbols have a 1GB size
-
 
  -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 21 Oct 2017 13:43:31 +0200
 
