@@ -1,0 +1,22 @@
+Fix filesystem unit tests on arm64
+
+arm64 memcmp can return different magnitude values depending on how pointers
+align compared to each other. To avoid problems with magnitude differences
+test should always normalize compare return values before using them.
+
+Index: llvm-toolchain-snapshot_7~svn337372/libcxx/test/std/experimental/filesystem/class.path/path.member/path.compare.pass.cpp
+===================================================================
+--- llvm-toolchain-snapshot_7~svn337372.orig/libcxx/test/std/experimental/filesystem/class.path/path.member/path.compare.pass.cpp
++++ llvm-toolchain-snapshot_7~svn337372/libcxx/test/std/experimental/filesystem/class.path/path.member/path.compare.pass.cpp
+@@ -78,6 +78,11 @@ static inline int normalize_ret(int ret)
+   return ret < 0 ? -1 : (ret > 0 ? 1 : 0);
+ }
+ 
++int normalize(int val)
++{
++	return val < 0 ? -1 : (val > 0 ? 1 : 0);
++}
++
+ int main()
+ {
+   using namespace fs;

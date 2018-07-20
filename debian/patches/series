@@ -54,3 +54,12 @@ impl-path-hurd.diff
 openmp-check-execstack.diff
 openmp-soname.diff
 openmp-mips-affinity.patch
+libcxx-test-filesystem-dont-assume-compare-magnitude-is-well-defined.patch
+libcxxabi-test-don-t-fail-extended-long-double.patch
+libcxx-test-fix-lockfree-test-for-i386.patch
+libcxxabi-arm-ehabi-fix.patch
+libcxx-test-atomics-set-compare-exchange-to-be-expected-fails-on-arm.patch
+libcxx-silent-test-libcxx.diff
+libcxx-silent-failure-ppc64el.diff
+libcxx-silent-failure-arm64.diff
+libcxx-glibc-2.27.diff
