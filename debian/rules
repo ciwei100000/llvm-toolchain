@@ -35,9 +35,19 @@ CXXFLAGS_EXTRA = -std=c++0x
 CONFIGURE_EXTRA =
 CMAKE_EXTRA =
 
+BASE_PATH	:= $(CURDIR)
+EXCEPTIONS :=ON
+
+ifneq (,$(filter $(DEB_HOST_ARCH),s390x))
+	EXCEPTIONS :=OFF
+endif
+
 ifneq (,$(filter $(DEB_HOST_ARCH),powerpc powerpcspe))
 LDFLAGS_EXTRA += -latomic
 endif
+
+# Cxx flags for building libcxx and libcxxabi
+LIBCXXFLAGS := $(shell dpkg-buildflags --get CXXFLAGS) $(shell dpkg-buildflags --get CPPFLAGS)
 
 # Only enable gsplit dwarf on archs which needs it (32 bits)
 ifeq ($(DEB_HOST_ARCH_BITS),32)
@@ -313,6 +323,21 @@ override_dh_auto_configure: preconfigure
 	-DPOLLY_BUNDLED_JSONCPP=OFF \
 	-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD="WebAssembly;AVR"
 
+LIBCXX_CMAKE_OPTIONS := \
+	-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-$(LLVM_VERSION) \
+	-DLLVM_CONFIG_PATH=$(CURDIR)/$(TARGET_BUILD)/bin/llvm-config \
+	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	-DCMAKE_CXX_COMPILER=$(CURDIR)/$(TARGET_BUILD)/bin/clang++ \
+	-DCMAKE_C_COMPILER=$(CURDIR)/$(TARGET_BUILD)/bin/clang \
+	-DCMAKE_CXX_FLAGS="$(LIBCXXFLAGS)" \
+	-DCMAKE_EXE_LINKER_FLAGS="" \
+	-DCMAKE_SHARED_LINKER_FLAGS="" \
+	-DCMAKE_MODULE_LINKER_FLAGS="" \
+	-DCMAKE_AR=$(CURDIR)/$(TARGET_BUILD)/bin/llvm-ar \
+	-DCMAKE_RANLIB=$(CURDIR)/$(TARGET_BUILD)/bin/llvm-ranlib \
+	-DCMAKE_C_COMPILER=$(CURDIR)/$(TARGET_BUILD)/bin/clang \
+	-DLLVM_EXTERNAL_LIT=$(BASE_PATH)/utils/lit/lit.py
+
 
 override_dh_auto_build:
 	$(PRE_PROCESS) $(MAKE) $(NJOBS) -C $(TARGET_BUILD) VERBOSE=1 CLANG_VENDOR=$(VENDOR) CXXFLAGS="$(CXXFLAGS_EXTRA)"  LDFLAGS="$(LDFLAGS_EXTRA)" REQUIRES_RTTI=1 DEBUGMAKE=1
@@ -324,6 +349,28 @@ ifeq (${LIBFUZZER_ENABLE},yes)
 	bin/clang++ -c $$CFLAGS -std=c++11 ../compiler-rt/lib/fuzzer/*.cpp -IFuzzer; \
 	ar ruv libFuzzer.a Fuzzer*.o
 endif
+
+# Builds libcxx and libcxxabi 
+
+	mkdir -p libcxxabi/build
+	mkdir -p libcxx/build
+
+	cd libcxxabi/build && \
+	cmake ../ \
+	$(LIBCXX_CMAKE_OPTIONS) \
+	-DLIBCXXABI_LIBCXX_PATH=$(BASE_PATH)/libcxx \
+	-DLIBCXXABI_LIBCXX_LIBRARY_PATH=$(BASE_PATH)/libcxx/build/lib \
+	-DLIBCXXABI_ENABLE_EXCEPTIONS=$(EXCEPTIONS) \
+	-DLLVM_ENABLE_RTTI=ON
+
+	cd libcxx/build && \
+	cmake ../ \
+	$(LIBCXX_CMAKE_OPTIONS) \
+	-DLIBCXX_CXX_ABI=libcxxabi \
+	-DLIBCXX_CXX_ABI_INCLUDE_PATHS=$(BASE_PATH)/libcxxabi/include \
+	-DLIBCXX_CXX_ABI_LIBRARY_PATH=$(BASE_PATH)/libcxxabi/build/lib \
+	-DLIBCXX_ENABLE_EXCEPTIONS=$(EXCEPTIONS) \
+	-DLIBCXX_INSTALL_EXPERIMENTAL_LIBRARY=ON
 
 override_dh_prep: build_doc
 	dh_prep
