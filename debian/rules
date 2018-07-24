@@ -480,6 +480,9 @@ endif
 # Probably useless
 	rm -f $(DEB_INST)/usr/lib/llvm-$(LLVM_VERSION)/lib/python2.7/site-packages/six.py
 
+	$(MAKE) -C libcxxabi/build install DESTDIR=$(DEB_INST)
+	$(MAKE) -C libcxx/build install DESTDIR=$(DEB_INST)
+
 # Rename binaries
 	mkdir -p $(DEB_INST)/usr/bin/
 	cd $(DEB_INST)/usr/bin/; \
@@ -635,6 +638,12 @@ endif
 # Sanitizer
 	$(MAKE) $(NJOBS) -C $(TARGET_BUILD) check-sanitizer || true
 
+# Libcxx
+	$(MAKE) $(NJOBS) -C libcxx/build check-libcxx || true
+
+# Libcxxabi
+	$(MAKE) $(MAKE) -C libcxxabi/build check-libcxxabi || true
+
 # LLDB tests
 ifeq (,$(filter $(DEB_HOST_ARCH), $(LLDB_DISABLE_ARCHS) armhf armel))
 ifneq (,$(filter codecoverage,$(DEB_BUILD_OPTIONS)))
@@ -694,6 +703,6 @@ override_dh_auto_clean:
 	rm -f $(CURDIR)/utils/vim/llvm-$(LLVM_VERSION).vim $(CURDIR)/utils/vim/tablegen-$(LLVM_VERSION).vim
 	rm -f $(CURDIR)/clang/tools/clang-format/clang-format-diff-$(LLVM_VERSION)
 	rm -f $(CURDIR)/clang/tools/clang-format/clang-format-$(LLVM_VERSION).py
-
+	rm -rf libcxx/build libcxxabi/build
 
 .PHONY: override_dh_strip preconfigure

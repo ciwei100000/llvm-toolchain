@@ -1,0 +1,4 @@
+#! /usr/bin/dh-exec
+
+debian/bin/clang++-libc++ usr/bin
+debian/bin/g++-libc++ usr/bin

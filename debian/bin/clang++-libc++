@@ -1,0 +1,6 @@
+ bin/clang++-libc++ 
+#!/bin/sh
+clang++ -I/usr/lib/llvm-7/include/c++/v1 \
+	-L/usr/lib/llvm-7/lib \
+	-Wl, -rpath, /usr/lib/llvm-7/lib
+	"$@"
