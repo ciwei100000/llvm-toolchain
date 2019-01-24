@@ -1,11 +1,11 @@
 #!/usr/bin/make -f
 
 TARGET_BUILD	:= build-llvm
-TARGET_BUILD_STAGE2    := $(TARGET_BUILD)/tools/clang/stage2-bins
+TARGET_BUILD_STAGE2    := $(TARGET_BUILD)/tools/clang/stage2-instrumented-bins/
 DEB_INST		:= $(CURDIR)/debian/tmp/
 
 # Disable to move the previous method
-BUILD_METHOD := stage2
+BUILD_METHOD := stage2-instrumented-generate-profdata
 
 GXX_VERSIONED_PACKAGE    := $(shell dpkg-query -W -f '$${Depends}' g++ | grep -o 'g++-[0-9][0-9.]*' | tail -n1 )
 GXX_VERSIONED_EXECUTABLE := $(shell dpkg -L $(GXX_VERSIONED_PACKAGE) | grep '/usr/bin/g++-[0-9][0-9.]*' | xargs ls -d | tail -n1 )
@@ -347,6 +347,7 @@ override_dh_auto_configure: preconfigure
 	echo "Using cmake: $$CMAKE_BIN"; \
 	cd $(TARGET_BUILD) && \
 	$(PRE_PROCESS_CONF) $$CMAKE_BIN ../ \
+        -C $(CURDIR)/tools/clang/cmake/caches/PGO.cmake \
 	-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-$(LLVM_VERSION) \
 	-DCMAKE_VERBOSE_MAKEFILE=ON \
 	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -369,7 +370,8 @@ override_dh_auto_configure: preconfigure
 	-DCLANG_ENABLE_BOOTSTRAP=ON \
 	-DCLANG_VENDOR=$(VENDOR) \
 	-DCLANG_BOOTSTRAP_PASSTHROUGH="CMAKE_INSTALL_PREFIX;CMAKE_VERBOSE_MAKEFILE;CMAKE_BUILD_TYPE;CMAKE_CXX_FLAGS_RELWITHDEBINFO;LLVM_LINK_LLVM_DYLIB;LLVM_INSTALL_UTILS;LLVM_VERSION_SUFFIX;LLVM_ENABLE_SPHINX;SPHINX_WARNINGS_AS_ERRORS;LLVM_BUILD_LLVM_DYLIB;LLVM_ENABLE_RTTI;LLVM_ENABLE_FFI;LIBCLANG_LIBRARY_VERSION;ENABLE_LINKER_BUILD_ID;POLLY_BUNDLED_JSONCPP;LLVM_EXPERIMENTAL_TARGETS_TO_BUILD;LLVM_USE_PERF;LLVM_ENABLE_ASSERTIONS;LLVM_BINUTILS_INCDIR;LLVM_HOST_TRIPLE;;LLVM_COMPILER_CHECKED;COMPILER_RT_BUILD_BUILTINS;LIBOMP_LIBFLAGS;CMAKE_SHARED_LINKER_FLAGS"
-
+	mkdir -p $(CURDIR)/build-llvm/build/ && cd $(CURDIR)/build-llvm/build/ && rm -f utils && ln -s $(CURDIR)/utils
+	mkdir -p $(CURDIR)/build-llvm/tools/clang/stage2-instrumented-bins/tools/clang/stage2-bins/build/ && cd $(CURDIR)build-llvm/tools/clang/stage2-instrumented-bins/tools/clang/stage2-bins/build/ && rm -f utils && ln -s ln -s $(CURDIR)/utils
 
 # make
 VERBOSE=VERBOSE=1
@@ -377,10 +379,10 @@ VERBOSE=VERBOSE=1
 #VERBOSE=-v
 
 debian-full-build:
-	$(PRE_PROCESS) make $(NJOBS) -C $(TARGET_BUILD) $(VERBOSE) CFLAGS="$(CFLAGS_EXTRA)" CXXFLAGS="$(CXXFLAGS_EXTRA)"  LDFLAGS="$(LDFLAGS_EXTRA)" REQUIRES_RTTI=1 DEBUGMAKE=1 $(BUILD_METHOD)
+	$(PRE_PROCESS) make $(NJOBS) -C $(TARGET_BUILD) $(VERBOSE) CFLAGS="$(CFLAGS_EXTRA)" CXXFLAGS="$(CXXFLAGS_EXTRA)"  LDFLAGS="$(LDFLAGS_EXTRA)" REQUIRES_RTTI=1 DEBUGMAKE=1 $(BUILD_METHOD) stage2
 
 # Check the stage 2 build worked
-	if test "$(BUILD_METHOD)" = "stage2"; then \
+	if test "$(BUILD_METHOD)" = "stage2" -o "$(BUILD_METHOD)" = "stage2-instrumented-generate-profdata"; then \
 	if ! readelf --string-dump .comment  $(TARGET_BUILD_STAGE2)/bin/clang 2>&1|grep -q "clang version"; then \
 		echo "clang hasn't been built using clang. Bye bye. Check that the stage2 build has been done."; \
 	fi; \
@@ -402,7 +404,7 @@ endif
 
 LIBCXX_CMAKE_OPTIONS := \
 	-DCMAKE_INSTALL_PREFIX=/usr/lib/llvm-$(LLVM_VERSION) \
-	-DLLVM_CONFIG_PATH=$(CURDIR)/$(TARGET_BUILD_STAGE2)/bin/llvm-config \
+	-DLLVM_CONFIG_PATH=$(CURDIR)/build-llvm/bin/llvm-config \
 	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 	-DCMAKE_CXX_COMPILER=$(CURDIR)/$(TARGET_BUILD_STAGE2)/bin/clang++ \
 	-DCMAKE_C_COMPILER=$(CURDIR)/$(TARGET_BUILD_STAGE2)/bin/clang \
@@ -410,8 +412,8 @@ LIBCXX_CMAKE_OPTIONS := \
 	-DCMAKE_EXE_LINKER_FLAGS="" \
 	-DCMAKE_SHARED_LINKER_FLAGS="" \
 	-DCMAKE_MODULE_LINKER_FLAGS="" \
-	-DCMAKE_AR=$(CURDIR)/$(TARGET_BUILD_STAGE2)/bin/llvm-ar \
-	-DCMAKE_RANLIB=$(CURDIR)/$(TARGET_BUILD_STAGE2)/bin/llvm-ranlib \
+	-DCMAKE_AR=$(CURDIR)/build-llvm/bin/llvm-ar \
+	-DCMAKE_RANLIB=$(CURDIR)/build-llvm/bin/llvm-ranlib \
 	-DLLVM_EXTERNAL_LIT=$(BASE_PATH)/utils/lit/lit.py \
 	$(CMAKE_EXTRA) \
 	$(CMAKE_EXTRA_LIBCXX)
@@ -698,18 +700,12 @@ endif
 # 	PATH=$(CURDIR)/:$$PATH dh_strip -p liblld-$(LLVM_VERSION) --dbg-package=liblld-$(LLVM_VERSION)-dbg
 # endif
 ifeq ($(shell dpkg --compare-versions $(shell dpkg-query -W -f '$${Version}' binutils) lt 2.31.1-11 ; echo $$?),0)
-	: # building with clang, binutils/strip has hard time stripping some libs because of
-	: # https://sourceware.org/bugzilla/show_bug.cgi?id=23788
-	: # use llvm-strip instead
 	: # Workaround some issues with stripping by using llvm's
 	if test ! -f $(CURDIR)/strip; then \
 		ln -s $(CURDIR)/debian/llvm-$(LLVM_VERSION)/usr/lib/llvm-$(LLVM_VERSION)/bin/llvm-strip $(CURDIR)/strip; \
 	fi
-	ls -al $(CURDIR)/debian/.debhelper/*/dbgsym-root/usr/lib/debug/.build-id/*/*|| true
-	: # On some old version of Debian (stretch) and Ubuntu, Rules-Requires-Root isn't supported
-	: # Sometime, it fails because of chown: changing ownership of 'debian/.debhelper/clang-7/dbgsym-root/usr/lib/debug/.build-id/37/ba506ae9d2f82219bf5c552f7c09853052b2b0.debug': Operation not permitted
-	: # Therefor, continue when we encounter an error
-	PATH=$(CURDIR)/:$$PATH LD_LIBRARY_PATH=$(DEB_INST)/usr/lib/llvm-$(LLVM_VERSION)/lib/:/usr/lib/*/libfakeroot dh_strip -a -v || true
+	: # strip segfaults on libFuzzer.a and other libs
+	PATH=$(CURDIR)/:$$PATH LD_LIBRARY_PATH=$(DEB_INST)/usr/lib/llvm-$(LLVM_VERSION)/lib/:/usr/lib/*/libfakeroot dh_strip -a -v
 	: # Remove the workaround
 	rm $(CURDIR)/strip
 	: # for some reasons, the +x might be removed
