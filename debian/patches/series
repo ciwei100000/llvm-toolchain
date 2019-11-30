@@ -139,3 +139,12 @@ ubuntu-eoan-distro.patch
 
 # Python 3
 0050-Remove-explicit-python-version-list.patch
+
+# Julia
+llvm-6.0-NVPTX-addrspaces.patch
+#llvm-8.0-D50167-scev-umin.patch # risky
+llvm-D27629-AArch64-large_model_6.0.1.patch
+llvm-D57118-powerpc.patch
+llvm7-D50010-VNCoercion-ni.patch
+llvm8-D34078-vectorize-fdiv.patch
+llvm8-WASM-addrspaces.patch
