@@ -85,7 +85,7 @@ CMAKE_EXTRA += -DCLANG_SYSTEMZ_DEFAULT_ARCH=$(ZARCH)
 export CC=gcc-$(GCC_VERSION)
 export CXX=g++-$(GCC_VERSION)
 
-opt_flags = -O2 -DNDEBUG -g1
+opt_flags = -O3 -DNDEBUG -g1
 
 ifneq (,$(findstring $(DEB_HOST_ARCH),armel))
   opt_flags += -marm
@@ -254,9 +254,6 @@ ifeq (,$(filter $(DEB_HOST_ARCH), armhf))
 # * BOOTSTRAP_LLVM_ENABLE_LTO is producing some large binary
 #   See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=943623
 #	CMAKE_EXTRA += -DBOOTSTRAP_LLVM_ENABLE_LTO="Thin"
-
-# Re-enabled by ciwei100000 for Debian 10 with GCC 8
-    CMAKE_EXTRA += -DLLVM_ENABLE_LTO="Thin"
 endif
 endif
 endif

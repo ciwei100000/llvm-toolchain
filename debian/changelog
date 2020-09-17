@@ -1,3 +1,9 @@
+llvm-toolchain-10 (1:10.0.1-5-c1) unstable; urgency=medium
+
+  * Use optimization level -O3
+
+ -- ciwei100000 <ciwei100000@gmail.com>  Wed, 16 Sep 2020 13:16:42 -0700
+
 llvm-toolchain-10 (1:10.0.1-5) unstable; urgency=medium
 
   [ John Paul Adrian Glaubitz ]
