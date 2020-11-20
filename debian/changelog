@@ -1,3 +1,333 @@
+llvm-toolchain-11 (1:11.0.0-5) UNRELEASED; urgency=medium
+
+  [ Adrian Bunk ]
+  * Fix the fuzzer build on i386.
+
+  [ Sylvestre Ledru ]
+  * Ignore some tests on i386 to get autopkgtest fixed (Closes: #972334)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 07 Nov 2020 15:53:51 +0100
+
+llvm-toolchain-11 (1:11.0.0-4) unstable; urgency=medium
+
+  * Cherry-pick some fixes from
+    https://github.com/opencollab/llvm-toolchain-integration-test-suite/
+  * Only install hwasan_symbolize when found
+  * Don't use gold on ppc64el. It fails to build in that case
+    (Closes: #972317)
+
+  [ John Paul Adrian Glaubitz ]
+  * Limit maximum parallel link jobs to 4 on sparc and sparc64
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 31 Oct 2020 21:49:01 +0100
+
+llvm-toolchain-11 (1:11.0.0-3) unstable; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * Rebuild to fix the coinstall issues (Closes: #972323)
+  * Replace use of deprecated $ADTTMP with $AUTOPKGTEST_TMP.
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 19 Oct 2020 14:21:50 +0200
+
+llvm-toolchain-11 (1:11.0.0-2) unstable; urgency=medium
+
+  * Fix a clang-format issue. Fix bug #47589
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 12 Oct 2020 15:15:27 +0200
+
+llvm-toolchain-11 (1:11.0.0-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 12 Oct 2020 11:14:19 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc6-1) unstable; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * New rc release
+  * remove all artifacts after tests
+
+  [ Gianfranco Costamagna ]
+  * qualify-clang.sh: exclude z3 tests when support is not available,
+    not based on libz3-dev installation but on the error returned by
+    clang invocation
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 07 Oct 2020 16:38:40 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc5-1) unstable; urgency=medium
+
+  * New rc release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 30 Sep 2020 20:15:40 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc4-1) unstable; urgency=medium
+
+  * New rc release
+  * Fix one more test in autopkgtest
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 28 Sep 2020 22:21:47 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc3-2) unstable; urgency=medium
+
+  * Update of the symbol list of libomp5:
+    - GOMP_loop_maybe_nonmonotonic_runtime_next
+    - GOMP_loop_maybe_nonmonotonic_runtime_start
+    - GOMP_loop_nonmonotonic_runtime_next
+    - GOMP_loop_nonmonotonic_runtime_start
+    - GOMP_loop_ull_maybe_nonmonotonic_runtime_next
+    - GOMP_loop_ull_maybe_nonmonotonic_runtime_start
+    - GOMP_loop_ull_nonmonotonic_runtime_next
+    - GOMP_loop_ull_nonmonotonic_runtime_start
+    - GOMP_parallel_loop_maybe_nonmonotonic_runtime
+    - GOMP_parallel_loop_nonmonotonic_runtime
+    - omp_display_env
+  * Bring back LLVM_POLLY_LINK_INTO_TOOLS=ON to workaround the error
+    clang (LLVM option parsing): Unknown command line argument '-polly'.
+    Try: 'clang (LLVM option parsing) --help'
+    Also found in autopkgtest
+  * In the autopkgtest tests, update the opt arguments (-q removed and
+    -basicaa renamed to -basic-aa)
+  * Disable test executions on mipsel (timeout)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sun, 27 Sep 2020 14:26:16 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc3-1) unstable; urgency=medium
+
+  * New rc release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Tue, 22 Sep 2020 17:19:40 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-6) unstable; urgency=medium
+
+  * Fix "libc++-11-dev includes libc++abi-11-dev headers"
+    (Closes: #969274)
+  * Install llvm examples in llvm-11-examples (Closes: #969339)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Mon, 07 Sep 2020 13:32:26 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-5) unstable; urgency=medium
+
+  [ John Paul Adrian Glaubitz ]
+  * Link against libatomic on powerpc to fix FTBFS in stage2
+  * Use dh-exec to exclude lib/libPolly*.a on powerpc and
+    powerpcspe from libclang-common-X.Y-dev.install.in
+
+  [ Gianfranco Costamagna ]
+  * autopkgtests: ignore binfmts enable command return value.
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 31 Aug 2020 12:26:58 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-4) unstable; urgency=medium
+
+  * integration-test-suite-test: change the configuration for 11
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Fri, 28 Aug 2020 23:08:33 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-3) unstable; urgency=medium
+
+  * Fix testsuite by ignoring binfmts test
+    (can't be enabled on autopkgtests)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Fri, 28 Aug 2020 21:56:49 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-2) unstable; urgency=medium
+
+  [ Gianfranco Costamagna ]
+  * Disable ocaml support on i386, not reasonable to support it there
+    (specially for Ubuntu)
+  * Enable binfmt support before using it in tests, to fix them
+
+  [ Sylvestre Ledru ]
+  * Also link against -latomic on mipsel to fix
+   /usr/[...]/atomic_base.h:426: undefined reference to `__atomic_load_8'
+   for lld to fix the FTBFS
+  * Fix a FTBFS on armel with libcxx-armhf-ftbfs.diff
+    atomic:2780:16: error: use of undeclared identifier '__libcpp_signed_lock_free'
+    typedef atomic<__libcpp_signed_lock_free> atomic_signed_lock_free;
+               ^
+    atomic:2781:16: error: unknown type name '__libcpp_unsigned_lock_free'; did you mean 'atomic_signed_lock_free'?
+    typedef atomic<__libcpp_unsigned_lock_free> atomic_unsigned_lock_free;
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Tue, 25 Aug 2020 10:44:00 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc2-1) unstable; urgency=medium
+
+  * New snapshot release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Thu, 20 Aug 2020 22:17:47 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc1-2) unstable; urgency=medium
+
+  * Don't install ompt-multiplex.h on armhf, mipsel and mips64el
+    (Closes: #967944)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 05 Aug 2020 15:23:25 +0200
+
+llvm-toolchain-11 (1:11.0.0~+rc1-1) unstable; urgency=medium
+
+  * Testing release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 29 Jul 2020 17:46:57 +0200
+
+llvm-toolchain-11 (1:11~++20200715043845+0e377e253c1-1~exp1) experimental; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * branching of snapshot into 11
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd/hurd-EIEIO-undef.diff: Remove, upstreamed.
+  * debian/patches/hurd/hurd-cxx-paths.diff: Remove, upstreamed.
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 15 Jul 2020 16:30:36 +0200
+
+llvm-toolchain-snapshot (1:11~++20200701093119+ffee8040534-1~exp1) experimental; urgency=medium
+
+  * New snapshot release
+  * libc++ requires the LLVM_PATH, adding it
+  * Remove no-z3.patch, seems to be merged upstream
+  * No longer install clang-import-test (upstream change)
+    See https://reviews.llvm.org/D82169
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 01 Jul 2020 09:34:28 +0200
+
+llvm-toolchain-snapshot (1:11~++20200623122106+cd6848f6e1d-1~exp1) experimental; urgency=medium
+
+  * experimental New snapshot release
+  * Add -DLLVM_POLLY_LINK_INTO_TOOLS=OFF to workaround
+    https://bugs.llvm.org/show_bug.cgi?id=45571
+  * New symbol clang_Type_getValueType added
+  * Install usr/lib/llvm-11/lib/cmake/lld/*.cmake
+    in liblld-11-dev
+  * Upstream change ad97ccf6b26a29262c9cbf5b3e7f6e84c6dcf55f
+    broke clangd-atomic-cmake.patch causing some undef symbol on
+    i386 and atomic
+  * Also install ompt-multiplex.h in libomp-X-dev
+  * revert-sphinx-deprecation.diff: revert the sphinx update as it breaks
+    debian buster
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Tue, 23 Jun 2020 00:24:07 +0200
+
+llvm-toolchain-snapshot (1:11~++20200621103028+10b0539772d-1~exp1) UNRELEASED; urgency=medium
+
+  * experimental New snapshot release
+  * Add -DLLVM_POLLY_LINK_INTO_TOOLS=OFF to workaround
+    https://bugs.llvm.org/show_bug.cgi?id=45571
+  * New symbol clang_Type_getValueType added
+  * Install usr/lib/llvm-11/lib/cmake/lld/*.cmake
+    in liblld-11-dev
+  * Upstream change ad97ccf6b26a29262c9cbf5b3e7f6e84c6dcf55f
+    broke clangd-atomic-cmake.patch causing some undef symbol on
+    i386 and atomic
+  * Also install ompt-multiplex.h in libomp-X-dev
+  * revert-sphinx-deprecation.diff: revert the sphinx update as it breaks debian
+    buster
+  * experimental New snapshot release
+  * Add -DLLVM_POLLY_LINK_INTO_TOOLS=OFF to workaround
+    https://bugs.llvm.org/show_bug.cgi?id=45571
+  * New symbol clang_Type_getValueType added
+  * Install usr/lib/llvm-11/lib/cmake/lld/*.cmake
+    in liblld-11-dev
+  * Upstream change ad97ccf6b26a29262c9cbf5b3e7f6e84c6dcf55f
+    broke clangd-atomic-cmake.patch causing some undef symbol on
+    i386 and atomic
+  * experimental New snapshot release
+  * experimental New snapshot release
+  * experimental New snapshot release
+  * experimental New snapshot release
+  * experimental New snapshot release
+  * experimental New snapshot release
+  * experimental New snapshot release
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sun, 21 Jun 2020 10:33:23 +0200
+
+llvm-toolchain-snapshot (1:11~++20200410111154+35052267023-1~exp1) experimental; urgency=medium
+
+  * New snapshot release
+  * Bring back libc++-experimental
+  * remove no-cgi.patch - applied upstream
+  * Also install liblldMachO2.a in liblld
+  * Reoder the cmake arg
+  * Update the copyright file with recent changes (Closes: #956287)
+    Thanks to Michael Lustfield for the detective work
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 11 Apr 2020 12:03:35 +0200
+
+llvm-toolchain-snapshot (1:11~++20200409051253+d08105482e1-1~exp1) experimental; urgency=medium
+
+  * New snapshot release
+  * Bring back libc++-experimental
+  * remove no-cgi.patch - applied upstream
+  * Also install liblldMachO2.a in liblld
+  * Reoder the cmake arg
+  * Update the copyright file with recent changes (Closes: #956287)
+    Thanks to Michael Lustfield for the detective work
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Thu, 09 Apr 2020 17:21:05 +0200
+
+llvm-toolchain-snapshot (1:11~++20200307074845+ec1d1f6ae70-1~exp1) experimental; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * experimental New snapshot release
+  * Install clang-tidy headers in libclang-X.Y-dev
+    Path: usr/lib/llvm-11/include/clang-tidy/
+    Introduced upstream in https://reviews.llvm.org/D73236
+
+  [ Samuel Thibault ]
+  * hurd/hurd-cxx-paths.diff: Drop part of patch applied upstream, fix it so
+    it can be applied.
+  * clang-tools-X.Y.install.in: Do not try to install hwasan_symbolize on
+    hurd-any.
+
+  [ Gianfranco Costamagna ]
+  * Add patch to port from old cgi to new html python3 method
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 07 Mar 2020 19:51:40 +0100
+
+llvm-toolchain-snapshot (1:11~++20200123111717+04fd2041561-1~exp1) experimental; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * experimental New snapshot release - 11
+  * Merge recent 9 changes (python 3 and testsuite mostly)
+
+  [ Gianfranco Costamagna ]
+  * fix lldb-10 -P path print (Closes: #945445)
+  * Fix lldb python installation path and symlinks
+  * Drop version constraint from libffi-dev library, satisfied since
+    old-old-stable
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Thu, 23 Jan 2020 14:52:30 +0100
+
+llvm-toolchain-10 (1:10.0.1-8) unstable; urgency=medium
+
+  * Don't use gold on ppc64el. It fails to build in that case
+    (Closes: #972317)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 31 Oct 2020 14:13:25 +0100
+
+llvm-toolchain-10 (1:10.0.1-7) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd/hurd-cxx-paths.diff: Add missing GCC installation
+    initialization.
+
+  [ Sylvestre Ledru ]
+  * Replace use of deprecated $ADTTMP with $AUTOPKGTEST_TMP.
+  * Rebuild to address the incompat issues (Closes: #972282)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Thu, 22 Oct 2020 22:29:07 +0200
+
+llvm-toolchain-10 (1:10.0.1-6) unstable; urgency=medium
+
+  [ Sylvestre Ledru ]
+  * Add debian/* to the copyright file. Uses the same license
+    as LLVM
+
+  [ Julien Cristau ]
+  * Cherry-pick "[PowerPC] PPCBoolRetToInt: Don't translate Constant's
+    operands".  Fixes rustc crash building firefox-esr.
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Wed, 02 Sep 2020 13:55:46 +0200
+
 llvm-toolchain-10 (1:10.0.1-5-c1) unstable; urgency=medium
 
   * Use optimization level -O3
@@ -418,10 +748,51 @@ llvm-toolchain-snapshot (1:10~svn366440-1~exp1) experimental; urgency=medium
 
  -- Sylvestre Ledru <sylvestre@debian.org>  Thu, 18 Jul 2019 18:58:32 +0200
 
-llvm-toolchain-9 (1:9.0.1-12) UNRELEASED; urgency=medium
+llvm-toolchain-9 (1:9.0.1-15) unstable; urgency=low
+
+  * Replace use of deprecated $ADTTMP with $AUTOPKGTEST_TMP.
+  * Ensure fixfilepath feature is disabled.  The fixfilepath
+    feature sets a -ffile-prefix-map flag, which is only
+    supported in clang-10. (Closes: #972751).
+    Thanks to Vagrant Cascadian for the patch
+  * Don't use gold on ppc64el. It fails to build in that case
+    (Closes: #972317)
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Sat, 31 Oct 2020 14:09:15 +0100
+
+llvm-toolchain-9 (1:9.0.1-14) unstable; urgency=medium
+
+  * debian/patches/b288d90b39f4b905c02092a9bfcfd6d78f99b191.patch:
+  * debian/patches/3185c30c54d0af5bffbff3bcfd721668d086ff10.patch:
+    - cherry-pick upstream fixes for ppc64el build failure (Closes: #968174)
+  * Previous version closed bug: 964988 (Closes: #964988)
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Sat, 15 Aug 2020 21:53:41 +0200
+
+llvm-toolchain-9 (1:9.0.1-13) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * Add mips-force-nomadd4.diff to default to +nomadd4 on MIPS. (Closes:
+    #964988)
+
+  [ Ximin Luo ]
+  * Add 373184.patch to fix soundness issue affecting rustc. (Closes: #959877)
+  * Add f8e146f3430de3a6cd904f3f3f7aa1bfaefee14c.patch to fix big-endian
+    miscompilation affecting rustc.
+
+ -- Sylvestre Ledru <sylvestre@debian.org>  Tue, 07 Jul 2020 18:18:00 +0200
+
+llvm-toolchain-9 (1:9.0.1-12) unstable; urgency=medium
 
   * Cherry-pick upstream patch D74453 to fix atomic compare-and-swap on
     riscv64.
+
+  [ William Grant ]
+  * debian/patches/riscv64-multilib-empty.patch: Adjust riscv64 GCC detector
+    to also check for existence of crtbegin.o in the default multilib dir,
+    like most other ports. Fixes FTBFS on riscv64, since on Ubuntu
+    /usr/lib/gcc/riscv64-linux-gnu/10 exists but is empty (gcc-10-base is
+    installed, but libgcc-10-dev is not).
 
  -- Jessica Clarke <jrtc27@debian.org>  Wed, 01 Apr 2020 16:23:55 +0100
 

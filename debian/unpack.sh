@@ -1,7 +1,7 @@
 set -e
-ORIG_VERSION=10
-MAJOR_VERSION=10.0.1
-REV=`ls -1 *$ORIG_VERSION_$MAJOR_VERSION*~+*xz | tail -1|perl -ne 'print "$1\n" if /~\+(.*)\.orig/;'  | sort -ru`
+ORIG_VERSION=11
+MAJOR_VERSION=11 # 8.0.1
+REV=`ls -1 *${ORIG_VERSION}_${MAJOR_VERSION}*~+*xz | tail -1|perl -ne 'print "$1\n" if /~\+(.*)\.orig/;'  | sort -ru`
 
 VERSION=$REV
 
@@ -15,7 +15,7 @@ tar Jxf $LLVM_ARCHIVE
 cd llvm-toolchain-${ORIG_VERSION}_$MAJOR_VERSION~+$VERSION/
 
 VER_FOUND=$(grep "PACKAGE_VERSION " libcxx/CMakeLists.txt|awk '{print $2}'|cut -d\) -f1)
-if test "${MAJOR_VERSION}.0.0" != "$VER_FOUND" -a "${MAJOR_VERSION}" != "$VER_FOUND"; then
+if test "${MAJOR_VERSION}.0.0" != "$VER_FOUND" -a "${MAJOR_VERSION}.0.0git" != "$VER_FOUND"; then
     echo "Mismatch of version"
     echo "Expected $MAJOR_VERSION / Found $VER_FOUND"
     echo "Update unpack.sh"

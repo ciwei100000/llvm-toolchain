@@ -83,6 +83,7 @@ libcxx/libcxx-silent-failure-arm64.diff
 
 # Change default optims
 mips-fpxx-enable.diff
+mips-force-nomadd4.diff
 26-set-correct-float-abi.diff
 clang-baseline-fix-i386.patch
 disable-sse2-old-x86.diff
@@ -97,7 +98,6 @@ remove-apple-clang-manpage.diff
 0049-Use-Debian-provided-MathJax-everywhere.patch
 
 # Hurd port
-hurd/hurd-cxx-paths.diff
 hurd/hurd-pathmax.diff
 
 # powerpcspe
@@ -126,7 +126,6 @@ bootstrap-fix-include-next.diff
 
 # riscv64
 risc/clang-riscv64-multiarch.diff
-risc/riscv64-multilib-empty.patch
 
 # Compiler-rt - workaround
 workaround-bug-42994-use-linker.diff
@@ -134,16 +133,14 @@ workaround-bug-42994-use-linker.diff
 # bug 939472
 #try-to-unbreak-thinlto.diff
 D67877.patch
-disable-fuzzer-compiler-rt-x86.diff
-no-z3.patch
+
+x86-fuzzer.patch
 
 python3-shebang.patch
 print-lldb-path.patch
-no-cgi.patch
-
-0001-systemz-allow-configuring-default-SYSTEMZ_DEFAULT_AR.patch
-
-ubuntu-groovy.diff
-clang_vendor_pass_stage2.diff
-remove-trailing-space-version.diff
-mips-force-nomadd4.patch
+libcxx-armhf-ftbfs.diff
+fix-clang-format-bug-47589.patch
+#0001-tsan-doesn-t-work-on-arm.patch
+#0002-Disable-test_asan_heap.c-for-arm-30.patch
+#0003-leaksan-add-a-test-31.patch
+silent-integration-test-suite-i386.diff

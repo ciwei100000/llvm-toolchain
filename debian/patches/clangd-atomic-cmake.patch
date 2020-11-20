@@ -1,10 +1,10 @@
-Index: llvm-toolchain-snapshot_10~+20191020075550+5b8546023f3/clang-tools-extra/clangd/CMakeLists.txt
+Index: llvm-toolchain-snapshot_11~++20200714101840+aef60af34ec/clang-tools-extra/clangd/CMakeLists.txt
 ===================================================================
---- llvm-toolchain-snapshot_10~+20191020075550+5b8546023f3.orig/clang-tools-extra/clangd/CMakeLists.txt
-+++ llvm-toolchain-snapshot_10~+20191020075550+5b8546023f3/clang-tools-extra/clangd/CMakeLists.txt
-@@ -34,6 +34,11 @@ if(NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
-   list(APPEND CLANGD_ATOMIC_LIB "atomic")
- endif()
+--- llvm-toolchain-snapshot_11~++20200714101840+aef60af34ec.orig/clang-tools-extra/clangd/CMakeLists.txt
++++ llvm-toolchain-snapshot_11~++20200714101840+aef60af34ec/clang-tools-extra/clangd/CMakeLists.txt
+@@ -28,6 +28,11 @@ set(LLVM_LINK_COMPONENTS
+   Option
+   )
  
 +if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "i386" OR
 +   CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "i686")
@@ -13,4 +13,12 @@ Index: llvm-toolchain-snapshot_10~+20191020075550+5b8546023f3/clang-tools-extra/
 +
  add_clang_library(clangDaemon
    AST.cpp
-   Cancellation.cpp
+   ClangdLSPServer.cpp
+@@ -104,6 +109,7 @@ add_clang_library(clangDaemon
+   clangdSupport
+   clangTidy
+   ${LLVM_PTHREAD_LIB}
++  ${CLANGD_ATOMIC_LIB}
+   ${ALL_CLANG_TIDY_CHECKS}
+ 
+   DEPENDS

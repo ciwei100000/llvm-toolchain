@@ -53,11 +53,19 @@ ifneq (,$(filter $(DEB_HOST_ARCH),i386 armel mips mipsel powerpc powerpcspe risc
 CMAKE_EXTRA += -DLIBOMP_LIBFLAGS="-latomic" -DCMAKE_SHARED_LINKER_FLAGS="-latomic"
 endif
 
-ifneq (,$(filter $(DEB_HOST_ARCH),armel riscv64))
+ifneq (,$(filter $(DEB_HOST_ARCH),sparc sparc64))
+CMAKE_EXTRA += -DLLVM_PARALLEL_LINK_JOBS=4
+endif
+
+ifneq (,$(filter $(DEB_HOST_ARCH),armel mipsel powerpc riscv64))
 # For some reason, in the stage2 build, when clang is used to compile
 # itself. The atomic detection is failing on armel and riscv64. Forcing the inclusion everywhere.
 LDFLAGS_EXTRA += -latomic
 endif
+
+# Ensure fixfilepath feature is disabled.  The fixfilepath feature
+# sets a -ffile-prefix-map flag, which is only supported in clang-10.
+export DEB_BUILD_MAINT_OPTIONS=reproducible=-fixfilepath
 
 # Cxx flags for building libcxx and libcxxabi
 LIBCXXFLAGS := $(shell dpkg-buildflags --get CXXFLAGS) $(shell dpkg-buildflags --get CPPFLAGS)
@@ -129,7 +137,7 @@ endif
 # 	CMAKE_EXTRA += -DLLVM_ENABLE_LLD=ON
 # endif
 
-BINUTILS_GOLD_ARCHS := amd64 arm64 armhf i386 ppc64 ppc64el x32 s390x hurd-i386 kfreebsd-amd64 kfreebsd-i386
+BINUTILS_GOLD_ARCHS := amd64 arm64 armhf i386 ppc64 x32 s390x hurd-i386 kfreebsd-amd64 kfreebsd-i386
 ifeq ($(shell dpkg --compare-versions $(shell dpkg-query -W -f '$${Version}' binutils) ge 2.23.1-1~exp3 ; echo $$?),0)
 ifneq (,$(filter $(DEB_HOST_ARCH),$(BINUTILS_GOLD_ARCHS)))
 # -fused-ld=gold enables the gold linker (but is not supported by all archs / distro)
@@ -185,6 +193,11 @@ ifeq ($(shell dpkg-vendor --derives-from Ubuntu && echo yes),yes)
 ifeq (riscv64,$(DEB_HOST_ARCH))
 	RUN_TEST=no
 endif
+endif
+
+# llvm tests timeout, disable it on mipsel
+ifeq (mipsel,$(DEB_HOST_ARCH))
+	RUN_TEST=no
 endif
 
 ifneq (,$(filter scan-build,$(DEB_BUILD_OPTIONS)))
@@ -296,7 +309,9 @@ preconfigure:
 	@echo "DEB_HOST_ARCH_OS=$(DEB_HOST_ARCH_OS)"
 	@echo "DISTRO=$(DISTRO)"
 	@echo "GCC_VERSION=$(GCC_VERSION)"
-	@echo 'PROJECTS=$(PROJECTS_LIST)'
+	@echo "PROJECTS=$(PROJECTS_LIST)"
+	@echo "LLVM_VERSION=$(LLVM_VERSION)"
+	@echo "LLVM_VERSION_FULL=$(LLVM_VERSION_FULL)"
 
 	for f in debian/*.in; do \
 		f2=$$(echo $$f | sed 's/\.in$$//;s/X\.Y/$(LLVM_VERSION)/'); \
@@ -370,7 +385,6 @@ override_dh_auto_configure: preconfigure
 	-DLLVM_VERSION_SUFFIX= \
 	-DLLVM_ENABLE_SPHINX=ON \
 	-DSPHINX_WARNINGS_AS_ERRORS=OFF \
-	-DLLVM_BUILD_LLVM_DYLIB=ON \
 	-DLLVM_ENABLE_RTTI=ON \
 	-DLLVM_ENABLE_FFI=ON \
 	-DLLVM_ENABLE_DUMP=ON \
@@ -386,12 +400,14 @@ override_dh_auto_configure: preconfigure
 	-DCLANG_VENDOR=$(VENDOR) \
 	-DCLANG_ENABLE_BOOTSTRAP=ON \
 	-DCLANG_BUILD_EXAMPLES=OFF \
+	-DLLVM_POLLY_LINK_INTO_TOOLS=ON \
 	-DBOOTSTRAP_CMAKE_CXX_FLAGS='$(BOOTSTRAP_CXXFLAGS_EXTRA)' \
 	-DBOOTSTRAP_CMAKE_C_FLAGS='$(BOOTSTRAP_CFLAGS_EXTRA)' \
-	-DCLANG_BOOTSTRAP_PASSTHROUGH="CMAKE_INSTALL_PREFIX;CMAKE_VERBOSE_MAKEFILE;CMAKE_BUILD_TYPE;CMAKE_CXX_FLAGS_RELWITHDEBINFO;LLVM_LINK_LLVM_DYLIB;LLVM_INSTALL_UTILS;LLVM_VERSION_SUFFIX;LLVM_ENABLE_SPHINX;SPHINX_WARNINGS_AS_ERRORS;LLVM_BUILD_LLVM_DYLIB;LLVM_ENABLE_RTTI;LLVM_ENABLE_FFI;LIBCLANG_LIBRARY_VERSION;ENABLE_LINKER_BUILD_ID;POLLY_BUNDLED_JSONCPP;LLVM_EXPERIMENTAL_TARGETS_TO_BUILD;LLVM_USE_PERF;LLVM_ENABLE_ASSERTIONS;LLVM_BINUTILS_INCDIR;LLVM_HOST_TRIPLE;LLVM_COMPILER_CHECKED;COMPILER_RT_BUILD_BUILTINS;LIBOMP_LIBFLAGS;CMAKE_SHARED_LINKER_FLAGS;PYTHON_EXECUTABLE;LLVM_ENABLE_Z3_SOLVER;CLANG_VENDOR"
+	-DCLANG_BOOTSTRAP_PASSTHROUGH="CMAKE_INSTALL_PREFIX;CMAKE_VERBOSE_MAKEFILE;CMAKE_BUILD_TYPE;CMAKE_CXX_FLAGS_RELWITHDEBINFO;LLVM_LINK_LLVM_DYLIB;LLVM_INSTALL_UTILS;LLVM_VERSION_SUFFIX;LLVM_ENABLE_SPHINX;SPHINX_WARNINGS_AS_ERRORS;LLVM_BUILD_LLVM_DYLIB;LLVM_ENABLE_RTTI;LLVM_ENABLE_FFI;LIBCLANG_LIBRARY_VERSION;ENABLE_LINKER_BUILD_ID;POLLY_BUNDLED_JSONCPP;LLVM_EXPERIMENTAL_TARGETS_TO_BUILD;LLVM_USE_PERF;LLVM_ENABLE_ASSERTIONS;LLVM_BINUTILS_INCDIR;LLVM_HOST_TRIPLE;LLVM_COMPILER_CHECKED;COMPILER_RT_BUILD_BUILTINS;LIBOMP_LIBFLAGS;CMAKE_SHARED_LINKER_FLAGS;PYTHON_EXECUTABLE;LLVM_ENABLE_Z3_SOLVER;LLVM_POLLY_LINK_INTO_TOOLS;CLANG_VENDOR"
 	FOUND_VERSION=`grep LLVM_VERSION_STRING build-llvm/include/llvm/Config/llvm-config.h|cut -d\" -f2`; \
 	if ! echo "$(LLVM_VERSION_FULL)"|grep "$$FOUND_VERSION"; then \
 		echo "mistmatch of version. Found: $$FOUND_VERSION / Expected: $(LLVM_VERSION_FULL)"; \
+		exit 1; \
 	fi
 
 # make
@@ -533,7 +549,7 @@ endif
 	help2man --no-info --version-string=$(LLVM_VERSION) clang/tools/scan-view/bin/scan-view > debian/man/scan-view-$(LLVM_VERSION).1 || true
 	help2man --no-info --version-string=$(LLVM_VERSION) clang/tools/clang-format/clang-format-diff.py > debian/man/clang-format-diff-$(LLVM_VERSION).1 || true
 
-	CMDS="llvm-dwarfdump llvm-mc llvm-mcmarkup llvm-objdump llvm-rtdyld llvm-size llvm-ranlib lldb lldb-mi clang-format clang clang++ clang-tblgen clang-check clang-cpp clang-import-test clang-tidy clang-apply-replacements clang-rename clang-query pp-trace sancov lli modularize clang-include-fixer find-all-symbols clang-reorder-fields ld.lld llvm-tblgen clang-change-namespace clang-offload-bundler clangd"; \
+	CMDS="llvm-dwarfdump llvm-mc llvm-mcmarkup llvm-objdump llvm-rtdyld llvm-size llvm-ranlib lldb lldb-mi clang-format clang clang++ clang-tblgen clang-check clang-cpp clang-tidy clang-apply-replacements clang-rename clang-query pp-trace sancov lli modularize clang-include-fixer find-all-symbols clang-reorder-fields ld.lld llvm-tblgen clang-change-namespace clang-offload-bundler clangd"; \
 	for f in $$CMDS; do \
 		echo "Generating manpage of $$f"; \
 		LD_LIBRARY_PATH=$(DEB_INST)/usr/lib/llvm-$(LLVM_VERSION)/lib/:/usr/lib/*/libfakeroot help2man --no-info --version-string=$(LLVM_VERSION) $(TARGET_BUILD_STAGE2)/bin/$$f > debian/man/$$f-$(LLVM_VERSION).1 || true; \
@@ -777,7 +793,8 @@ override_dh_installdeb:
 
 	rm -f $(CURDIR)/debian/tmp/usr/lib/llvm-$(LLVM_VERSION)/lib/python*/*-packages/lldb/__init__.pyc $(CURDIR)/debian/python*-lldb-$(LLVM_VERSION)/usr/lib/llvm-$(LLVM_VERSION)/lib/python*/*-packages/lldb/__init__.pyc
 	rm -f $(CURDIR)/debian/clang-$(LLVM_VERSION)-examples/usr/share/doc/clang-$(LLVM_VERSION)-examples/examples/*Make*
-
+# Remove some libc++ abi files in the libc++ file. See bug #969274
+	rm -f $(CURDIR)/debian/libc++-$(LLVM_VERSION)-dev/usr/lib/llvm-$(LLVM_VERSION)/include/c++/__cxxabi_config.h $(CURDIR)/debian/libc++-$(LLVM_VERSION)-dev/usr/lib/llvm-$(LLVM_VERSION)/include/c++/cxxabi.h
 # Remove auto generated python pyc
 	find $(CURDIR)/debian/llvm-$(LLVM_VERSION)-tools/usr/lib/llvm-$(LLVM_VERSION)/ -name '*.pyc' | xargs -r rm -f
 

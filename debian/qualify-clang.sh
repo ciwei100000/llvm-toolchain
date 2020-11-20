@@ -9,7 +9,7 @@ VERSION=$(dpkg-parsechangelog | sed -rne "s,^Version: 1:([0-9]+).*,\1,p")
 DETAILED_VERSION=$(dpkg-parsechangelog |  sed -rne "s,^Version: 1:([0-9.]+)(~|-)(.*),\1\2\3,p")
 DEB_HOST_ARCH=$(dpkg-architecture -qDEB_HOST_ARCH)
 
-LIST="libomp5-${VERSION}_${DETAILED_VERSION}_amd64.deb libomp-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb lldb-${VERSION}_${DETAILED_VERSION}_amd64.deb python3-lldb-${VERSION}_${DETAILED_VERSION}_amd64.deb libllvm${VERSION}_${DETAILED_VERSION}_amd64.deb llvm-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb liblldb-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb  libclang1-${VERSION}_${DETAILED_VERSION}_amd64.deb  libclang-common-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb  llvm-${VERSION}_${DETAILED_VERSION}_amd64.deb  liblldb-${VERSION}_${DETAILED_VERSION}_amd64.deb  llvm-${VERSION}-runtime_${DETAILED_VERSION}_amd64.deb lld-${VERSION}_${DETAILED_VERSION}_amd64.deb libfuzzer-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libclang-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++abi-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++1-${VERSION}_${DETAILED_VERSION}_amd64.deb libc++abi1-${VERSION}_${DETAILED_VERSION}_amd64.deb clang-${VERSION}_${DETAILED_VERSION}_amd64.deb llvm-${VERSION}-tools_${DETAILED_VERSION}_amd64.deb clang-tools-${VERSION}_${DETAILED_VERSION}_amd64.deb clangd-${VERSION}_${DETAILED_VERSION}_amd64.deb clang-${VERSION}-dbgsym_${DETAILED_VERSION}_amd64.deb libclang1-${VERSION}-dbgsym_${DETAILED_VERSION}_amd64.deb libclang-cpp${VERSION}_${DETAILED_VERSION}_amd64.deb clang-tidy-${VERSION}_${DETAILED_VERSION}_amd64.deb libclang-cpp${VERSION}-dev_${DETAILED_VERSION}_amd64.deb"
+LIST="libomp5-${VERSION}_${DETAILED_VERSION}_amd64.deb libomp-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb lldb-${VERSION}_${DETAILED_VERSION}_amd64.deb python3-lldb-${VERSION}_${DETAILED_VERSION}_amd64.deb libllvm${VERSION}_${DETAILED_VERSION}_amd64.deb llvm-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb liblldb-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb  libclang1-${VERSION}_${DETAILED_VERSION}_amd64.deb  libclang-common-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb  llvm-${VERSION}_${DETAILED_VERSION}_amd64.deb  liblldb-${VERSION}_${DETAILED_VERSION}_amd64.deb  llvm-${VERSION}-runtime_${DETAILED_VERSION}_amd64.deb lld-${VERSION}_${DETAILED_VERSION}_amd64.deb libfuzzer-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libclang-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++abi-${VERSION}-dev_${DETAILED_VERSION}_amd64.deb libc++1-${VERSION}_${DETAILED_VERSION}_amd64.deb libc++abi1-${VERSION}_${DETAILED_VERSION}_amd64.deb clang-${VERSION}_${DETAILED_VERSION}_amd64.deb llvm-${VERSION}-tools_${DETAILED_VERSION}_amd64.deb clang-tools-${VERSION}_${DETAILED_VERSION}_amd64.deb clangd-${VERSION}_${DETAILED_VERSION}_amd64.deb libclang-cpp${VERSION}_${DETAILED_VERSION}_amd64.deb clang-tidy-${VERSION}_${DETAILED_VERSION}_amd64.deb libclang-cpp${VERSION}-dev_${DETAILED_VERSION}_amd64.deb"
 echo "To install everything:"
 echo "sudo apt --purge remove 'libomp5-*' 'libc++*dev' 'libc++*' 'python3-lldb-*'"
 echo "sudo dpkg -i $LIST"
@@ -345,7 +345,7 @@ if test $NBLINES -lt 100; then
     exit 42
 fi
 
-if [ $DEB_HOST_ARCH != "arm64" -a $DEB_HOST_ARCH != "ppc64el" ]; then
+if [ $DEB_HOST_ARCH == "amd64" -o $DEB_HOST_ARCH == "i386" ]; then
     # Fails on arm64 with
     # /usr/lib/llvm-10/lib/clang/10.0.0/include/mmintrin.h:33:5: error: use of undeclared identifier '__builtin_ia32_emms'; did you mean '__builtin_isless'?
     echo '#include <emmintrin.h>' > foo.cc
@@ -385,9 +385,16 @@ void testBitwiseRules(unsigned int a, int b) {
   clang_analyzer_eval((b | -2) >= 0); // expected-warning{{FALSE}}
 }
 ' > foo.c
-if dpkg -l|grep -q libz3-dev; then
-   # Should work
+
+clang-$VERSION -cc1  -analyze -analyzer-constraints=range -analyzer-checker=core,debug.ExprInspection -analyzer-constraints=z3 foo.c &> foo.log
+if ! grep -q "LLVM was not compiled with Z3 support" foo.log; then
+    # Should work
     clang-$VERSION -cc1  -analyze -analyzer-constraints=range -analyzer-checker=core,debug.ExprInspection -verify -analyzer-config eagerly-assume=false -analyzer-constraints=z3 foo.c
+    clang-$VERSION -cc1  -analyze -analyzer-constraints=range -analyzer-checker=core,debug.ExprInspection -analyzer-constraints=z3 foo.c &> foo.log
+    if ! grep -q "2 warnings generated." foo.log; then
+        echo "Should find 2 warnings"
+        exit 1
+    fi
 else
     echo "z3 support not available"
 fi
@@ -399,19 +406,9 @@ if grep -q "File a.c Line 7: UNKNOWN" foo.log; then
     exit 1
 fi
 
-if dpkg -l|grep -q libz3-dev; then
-    clang-$VERSION -cc1  -analyze -analyzer-constraints=range -analyzer-checker=core,debug.ExprInspection -analyzer-constraints=z3 foo.c &> foo.log
-    if ! grep -q "2 warnings generated." foo.log; then
-        echo "Should find 2 warnings"
-        exit 1
-    fi
-else
-    echo "z3 support not available"
-fi
-
 clang-$VERSION -cc1  -analyze -analyzer-constraints=range -analyzer-checker=core,debug.ExprInspection foo.c &> foo.log
-if ! grep -q "3 warnings generated." foo.log; then
-    echo "Should find 3 warnings"
+if ! grep -q "warnings generated." foo.log; then
+    echo "Should find at least 2 warnings"
     exit 1
 fi
 
@@ -814,7 +811,7 @@ if ! grep "No such file or directory" foo.log; then
     if ! ./a.out 2>&1 | grep -q -E "(Test unit written|PreferSmall)"; then
         echo "fuzzer. Output:"
         ./a.out || true
-        if [ $DEB_HOST_ARCH != "arm64" -a $DEB_HOST_ARCH != "ppc64el" ]; then
+        if [ $DEB_HOST_ARCH == "amd64" -o $DEB_HOST_ARCH == "i386" ]; then
             # Don't fail on arm64 and ppc64el
             exit 42
         fi
@@ -936,6 +933,8 @@ fi
 ./o > /dev/null
 clang++-$VERSION -std=c++11 -stdlib=libc++ foo.cpp -o o
 ./o > /dev/null
+clang++-$VERSION -std=c++14 -stdlib=libc++ foo.cpp -lc++experimental -o o
+./o > /dev/null
 
 # Bug 889832
 echo '#include <iostream>
@@ -974,6 +973,8 @@ int main() {
       >::value, "");
 }' > foo.cpp
 clang++-$VERSION -std=c++17 -stdlib=libc++ foo.cpp -o o
+./o > /dev/null
+clang++-$VERSION -std=c++17 -stdlib=libc++ foo.cpp -lc++experimental -o o
 ./o > /dev/null
 
 # Bug LP#1586215
@@ -1063,7 +1064,7 @@ clang-$VERSION -O3 -mllvm -polly -mllvm -polly-parallel -lgomp  foo.c
 clang-$VERSION -O3 -mllvm -polly -mllvm -polly-vectorizer=stripmine foo.c
 clang-$VERSION -S -fsave-optimization-record -emit-llvm foo.c -o matmul.s
 opt-$VERSION -S -polly-canonicalize matmul.s > matmul.preopt.ll > /dev/null
-opt-$VERSION -basicaa -polly-ast -analyze -q matmul.preopt.ll -polly-process-unprofitable > /dev/null
+opt-$VERSION -basic-aa -polly-ast -analyze matmul.preopt.ll -polly-process-unprofitable > /dev/null
 if test ! -f /usr/lib/llvm-$VERSION/share/opt-viewer/opt-viewer.py; then
     echo "Install llvm-$VERSION-tools"
     exit 42
@@ -1119,8 +1120,7 @@ int main() {
   EmitBackendOutput(*diags, *hsOpts, *cgOpts, *tOpts, *lOpts, *tDesc, m, *action, std::move(AsmOutStream));
 }
 EOF
-clang++-$VERSION foo.cpp -o test -lclangBasic -lclangCodeGen -lclangDriver -lclangFrontend -lclangFrontendTool -lclangCodeGen -lclangRewriteFrontend -lclangARCMigrate -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangCrossTU -lclangIndex -lclangFrontend -lclangDriver -lclangParse -lclangSerialization -lclangSema -lclangAnalysis -lclangEdit -lclangFormat -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangASTMatchers -lclangAST -lclangLex -lclangBasic -ldl  /usr/lib/llvm-10/lib/libLLVM-10.so -lclangCodeGen -lclangDriver -lclangFrontend -lclangFrontendTool -lclangRewriteFrontend -lclangARCMigrate -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangCrossTU -lclangIndex -lclangParse -lclangSerialization -lclangSema -lclangAnalysis -lclangEdit -lclangFormat -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangASTMatchers -lclangAST -lclangLex -ldl  -I /usr/lib/llvm-$VERSION/include/ -L/usr/lib/llvm-$VERSION/lib/ -lPolly -lPollyPPCG -lPollyISL
-
+clang++-$VERSION foo.cpp -o test -lclangBasic -lclangCodeGen -lclangDriver -lclangFrontend -lclangFrontendTool -lclangCodeGen -lclangRewriteFrontend -lclangARCMigrate -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangCrossTU -lclangIndex -lclangFrontend -lclangDriver -lclangParse -lclangSerialization -lclangSema -lclangAnalysis -lclangEdit -lclangFormat -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangASTMatchers -lclangAST -lclangLex -lclangBasic -ldl  /usr/lib/llvm-$VERSION/lib/libLLVM-$VERSION.so -lclangCodeGen -lclangDriver -lclangFrontend -lclangFrontendTool -lclangRewriteFrontend -lclangARCMigrate -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangCrossTU -lclangIndex -lclangParse -lclangSerialization -lclangSema -lclangAnalysis -lclangEdit -lclangFormat -lclangToolingInclusions -lclangToolingCore -lclangRewrite -lclangASTMatchers -lclangAST -lclangLex -ldl  -I /usr/lib/llvm-$VERSION/include/ -L/usr/lib/llvm-$VERSION/lib/ -lPolly -lPollyPPCG -lPollyISL
 
 if test ! -f /usr/bin/lldb-$VERSION; then
     echo "Install lldb-$VERSION";
@@ -1338,6 +1338,6 @@ fi
 
 #clean up
 rm -f a.out bar crash-* foo foo.* lldb-cmd.txt main.* test_fuzzer.cc foo.* o
-rm -rf output matmul.* *profraw opt.ll
+rm -rf output matmul.* *profraw opt.ll a.json default.profdata test
 
 echo "Completed"
